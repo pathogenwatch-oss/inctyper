@@ -42,7 +42,7 @@ COPY --from=builder /db /db
 
 COPY --from=taxonconfig /genus_to_db.map /db/genus_to_db.map
 
-COPY src/map_species.py /
+COPY src/inctyper_lib.py /
 
 COPY src/inc_typer.py /
 

@@ -4,7 +4,7 @@ import subprocess
 import sys
 from collections import defaultdict
 
-import map_species
+import inctyper_lib as lib
 
 query_file = sys.argv[1]
 
@@ -12,7 +12,7 @@ genus_id = sys.argv[2]
 
 resource_dir = sys.argv[3] if len(sys.argv) == 4 else 'db/'
 
-genus_map = map_species.read_map(resource_dir)
+genus_map = lib.read_map(resource_dir)
 
 if genus_id not in genus_map:
     print('{}', file=sys.stdout)
@@ -33,7 +33,7 @@ p = subprocess.Popen(blast_cmd, stdout=subprocess.PIPE)
 return_code = p.returncode
 
 # Read result file and write as json blob
-matches = defaultdict(lambda: list())
+matches = defaultdict(list)
 
 for line in p.stdout.readlines():
     data = line.decode('UTF-8').rstrip().split('\t')
@@ -47,13 +47,21 @@ for line in p.stdout.readlines():
         continue
 
     matches[data[0]].append(
-        {'id': data[1], 'qstart': data[4], 'qend': data[5], 'sstart': data[6], 'send': data[7], 'pid': data[8],
-         'cov': cov})
+        {'contig': data[0], 'id': data[1], 'qstart': int(data[4]), 'qend': int(data[5]), 'sstart': int(data[6]),
+         'send': int(data[7]), 'pid': float(data[8]), 'cov': float(cov)})
 
-result = dict()
+results = list()
 
-for contig_id in matches.keys():
-    result['inc_type'] = '|'.join(sorted([match['id'] for match in matches[contig_id]]))
-    result['matches'] = matches
+for contig in matches.keys():
+    sorted_matches = sorted(matches[contig], key=lambda match: match['pid'], reverse=True)
+    kept = list()
+    skip = set()
+    for i in range(0, len(sorted_matches)):
+        if i not in skip:
+            kept.append(sorted_matches[i])
+        for j in range(i + 1, len(sorted_matches)):
+            if lib.overlapping(sorted_matches[i], sorted_matches[j], 20):
+                skip.add(j)
+    results.extend(sorted(kept, key=lambda match: match['qstart']))
 
-print(json.dumps(result, indent=4), file=sys.stdout)
+print(json.dumps(results, indent=4), file=sys.stdout)
