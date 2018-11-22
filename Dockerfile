@@ -1,3 +1,20 @@
+FROM python:3.6-stretch as taxonconfig
+
+RUN curl -L https://github.com/shenwei356/taxonkit/releases/download/v0.3.0/taxonkit_linux_amd64.tar.gz | tar -xz && \
+    chmod +x taxonkit && \
+    cd /tmp && \
+    curl -L ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz | tar -xz && \
+    mkdir /root/.taxonkit && \
+    mv names.dmp /root/.taxonkit && \
+    mv nodes.dmp /root/.taxonkit && \
+    rm -rf /tmp/*
+
+COPY config /config
+
+COPY src/taxid_map.py /
+
+RUN python taxid_map.py /config /taxonkit
+
 FROM python:3.6-stretch as builder
 
 RUN apt-get update \
@@ -12,13 +29,6 @@ COPY src/inc_builder.py /
 
 RUN python inc_builder.py
 
-COPY config /
-
-COPY src/taxid_map.py /
-
-RUN python taxid_map.py config && \
-    mv
-
 FROM python:3.6-stretch
 
 RUN apt-get update \
@@ -29,6 +39,8 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /db /db
+
+COPY --from=taxonconfig /genus_to_db.map /db/genus_to_db.map
 
 COPY src/map_species.py /
 

@@ -14,6 +14,10 @@ resource_dir = sys.argv[3] if len(sys.argv) == 4 else 'db/'
 
 genus_map = map_species.read_map(resource_dir)
 
+if genus_id not in genus_map:
+    print('{}', file=sys.stdout)
+    exit(0)
+
 inc_db = 'db/' + genus_map[genus_id] + '_inc_reps'
 
 blast_cmd = ['blastn',
