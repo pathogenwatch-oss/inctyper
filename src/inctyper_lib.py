@@ -3,7 +3,7 @@
 map_file = 'genus_to_db.map'
 
 
-def read_map(resource_dir) -> dict:
+def read_map(resource_dir: str) -> dict:
     genus_to_db = dict()
 
     with open(resource_dir + '/' + map_file, 'r') as map_fh:
@@ -22,3 +22,16 @@ def overlapping(match1, match2, threshold) -> bool:
         overlap_length = 0
 
     return threshold < overlap_length
+
+
+def select_matches(matches: list) -> list:
+    sorted_matches = sorted(matches, key=lambda match: match['pid'], reverse=True)
+    kept = list()
+    skip = set()
+    for i in range(0, len(sorted_matches)):
+        if i not in skip:
+            kept.append(sorted_matches[i])
+            for j in range(i + 1, len(sorted_matches)):
+                if overlapping(sorted_matches[i], sorted_matches[j], 20):
+                    skip.add(j)
+    return kept

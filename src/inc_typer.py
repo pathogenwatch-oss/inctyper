@@ -53,15 +53,6 @@ for line in p.stdout.readlines():
 results = list()
 
 for contig in matches.keys():
-    sorted_matches = sorted(matches[contig], key=lambda match: match['pid'], reverse=True)
-    kept = list()
-    skip = set()
-    for i in range(0, len(sorted_matches)):
-        if i not in skip:
-            kept.append(sorted_matches[i])
-        for j in range(i + 1, len(sorted_matches)):
-            if lib.overlapping(sorted_matches[i], sorted_matches[j], 20):
-                skip.add(j)
-    results.extend(sorted(kept, key=lambda match: match['qstart']))
+    results.extend(sorted(lib.select_matches(matches[contig]), key=lambda match: match['qstart']))
 
 print(json.dumps(results, indent=4), file=sys.stdout)
