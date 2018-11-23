@@ -25,7 +25,7 @@ blast_cmd = ['blastn',
              '-db', inc_db,
              '-outfmt', '6 qseqid sseqid qlen slen qstart qend sstart send pident evalue',
              '-evalue', '1e-35',
-             '-perc_identity', '95',
+             '-perc_identity', '90.0',
              '-max_target_seqs', '1000']
 
 p = subprocess.Popen(blast_cmd, stdout=subprocess.PIPE)
@@ -47,12 +47,13 @@ for line in p.stdout.readlines():
         continue
 
     matches[data[0]].append(
-        {'contig': data[0], 'id': data[1], 'qstart': int(data[4]), 'qend': int(data[5]), 'sstart': int(data[6]),
-         'send': int(data[7]), 'pid': float(data[8]), 'cov': float(cov)})
+        {'Contig': data[0], 'Inc Match': data[1], 'Percent Identity': float(data[8]), 'Match Coverage': float(cov),
+         'Contig Start': int(data[4]), 'Contig End': int(data[5]), 'Reference Start': int(data[6]),
+         'Reference End': int(data[7])})
 
 results = list()
 
 for contig in matches.keys():
-    results.extend(sorted(lib.select_matches(matches[contig]), key=lambda match: match['qstart']))
+    results.extend(sorted(lib.select_matches(matches[contig]), key=lambda match: match['Contig Start']))
 
 print(json.dumps(results, indent=4), file=sys.stdout)

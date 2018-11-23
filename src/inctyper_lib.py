@@ -25,7 +25,7 @@ def overlapping(match1, match2, threshold) -> bool:
 
 
 def select_matches(matches: list) -> list:
-    sorted_matches = sorted(matches, key=lambda match: match['pid'], reverse=True)
+    sorted_matches = sorted(matches, key=lambda match: match['Percent Identity'], reverse=True)
     kept = list()
     skip = set()
     for i in range(0, len(sorted_matches)):
