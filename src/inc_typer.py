@@ -40,16 +40,16 @@ for line in p.stdout.readlines():
     # Check the length coverage
     coords = sorted([int(data[6]), int(data[7])])
 
-    cov = (coords[1] - coords[0] + 1) / float(data[3])
+    cov = ((coords[1] - coords[0] + 1) / float(data[3])) * 100
 
-    if cov < 0.6:
+    if cov < 60:
         # Fragment match
         continue
 
     matches[data[0]].append(
-        {'Contig': data[0], 'Inc Match': data[1], 'Percent Identity': float(data[8]), 'Match Coverage': float(cov),
-         'Contig Start': int(data[4]), 'Contig End': int(data[5]), 'Reference Start': int(data[6]),
-         'Reference End': int(data[7])})
+        {'Contig': data[0], 'Inc Match': data[1], 'Percent Identity': round(float(data[8]), 3),
+         'Match Coverage': round(float(cov), 3), 'Contig Start': int(data[4]), 'Contig End': int(data[5]),
+         'Reference Start': int(data[6]), 'Reference End': int(data[7])})
 
 results = list()
 
