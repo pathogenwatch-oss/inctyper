@@ -14,10 +14,10 @@ def read_map(resource_dir: str) -> dict:
 
 
 def overlapping(match1, match2, threshold) -> bool:
-    if match1['qstart'] <= match2['qend'] <= match1['qend']:
-        overlap_length = match2['qend'] - match1['qstart'] + 1
-    elif match2['qstart'] <= match1['qend'] <= match2['qend']:
-        overlap_length = match1['qend'] - match2['qstart'] + 1
+    if match1['Contig Start'] <= match2['Contig End'] <= match1['Contig End']:
+        overlap_length = match2['Contig End'] - match1['Contig Start'] + 1
+    elif match2['Contig Start'] <= match1['Contig End'] <= match2['Contig End']:
+        overlap_length = match1['Contig End'] - match2['Contig Start'] + 1
     else:
         overlap_length = 0
 
