@@ -56,5 +56,5 @@ results = list()
 for contig in matches.keys():
     results.extend(sorted(lib.select_matches(matches[contig]), key=lambda match: match['Contig Start']))
 
-jsonResult = {'inc_matches': results}
+jsonResult = {'Inc Matches': results}
 print(json.dumps(jsonResult, indent=4), file=sys.stdout)
