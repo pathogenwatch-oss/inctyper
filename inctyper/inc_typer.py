@@ -42,8 +42,11 @@ for line in p.stdout.readlines():
 
     cov = ((coords[1] - coords[0] + 1) / float(data[3])) * 100
 
-    if cov < 60:
+    if cov < 100.0:
         # Fragment match
+        continue
+
+    if float(data[8]) < 90:
         continue
 
     matches[data[0]].append(

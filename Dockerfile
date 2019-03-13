@@ -11,7 +11,7 @@ RUN curl -L https://github.com/shenwei356/taxonkit/releases/download/v0.3.0/taxo
 
 COPY config /config
 
-COPY src/taxid_map.py /
+COPY inctyper /
 
 RUN python taxid_map.py /config /taxonkit
 
@@ -25,7 +25,7 @@ RUN apt-get update \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
-COPY src/inc_builder.py /
+COPY inctyper/inc_builder.py /
 
 RUN python inc_builder.py
 
@@ -42,9 +42,9 @@ COPY --from=builder /db /db
 
 COPY --from=taxonconfig /genus_to_db.map /db/genus_to_db.map
 
-COPY src/inctyper_lib.py /
+COPY inctyper/inctyper_lib.py /
 
-COPY src/inc_typer.py /
+COPY inctyper/inc_typer.py /
 
 RUN mkdir /data
 
