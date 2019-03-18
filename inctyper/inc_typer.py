@@ -7,17 +7,6 @@ from collections import defaultdict
 import inctyper_lib as lib
 
 
-def resolve_inctype(header: str) -> str:
-    # Anything after a double underscore is irrelevant.
-    first_part = header.rstrip().split('__')[0]
-    smaller_parts = first_part.split('_')
-    # If there's only one part left, that is the Inc Type, otherwise it's the first two parts
-    if 1 == len(smaller_parts):
-        return smaller_parts[0]
-    else:
-        return '_'.join(smaller_parts[0:2])
-
-
 query_file = sys.argv[1]
 
 genus_id = sys.argv[2]
@@ -61,7 +50,7 @@ for line in p.stdout.readlines():
     if float(data[8]) < 90:
         continue
 
-    inc_type = resolve_inctype(data[1])
+    inc_type = lib.resolve_inctype(data[1])
 
     matches[data[0]].append(
         {'Contig': data[0], 'Match ID': data[1], 'Inc Match': inc_type, 'Percent Identity': round(float(data[8]), 3),

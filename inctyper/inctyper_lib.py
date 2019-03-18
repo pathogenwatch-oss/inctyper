@@ -3,6 +3,17 @@
 map_file = 'genus_to_db.map'
 
 
+def resolve_inctype(header: str) -> str:
+    # Anything after a double underscore is irrelevant.
+    first_part = header.rstrip().split('__')[0]
+    smaller_parts = first_part.split('_')
+    # If there's only one part left, that is the Inc Type, otherwise it's the first two parts
+    if 1 == len(smaller_parts):
+        return smaller_parts[0]
+    else:
+        return '_'.join(smaller_parts[0:2])
+
+
 def read_map(resource_dir: str) -> dict:
     genus_to_db = dict()
 
