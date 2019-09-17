@@ -1,40 +1,65 @@
 import datetime
+import glob
 import json
 import os
 import subprocess
+import sys
 import urllib.request
+import shutil
 
 """Script downloads and sets up the inc typing library"""
 
 db_url = 'https://bitbucket.org/genomicepidemiology/plasmidfinder_db/get/master.zip'
 data_dir = 'db'
-reps_db_name = 'inc_reps'
+reps_db_name = 'plasmidfinder_db.zip'
 
 if not os.path.exists(data_dir):
     os.makedirs(data_dir, exist_ok=True)
 
-os.chdir(data_dir)
+gp_data_dir = data_dir + '/gram_positive'
+if not os.path.exists(gp_data_dir):
+    os.makedirs(gp_data_dir, exist_ok=True)
 
-urllib.request.urlretrieve(db_url, reps_db_name + '.fna.zip')
+gn_data_dir = data_dir + '/gram_negative'
+if not os.path.exists(gn_data_dir):
+    os.makedirs(gn_data_dir, exist_ok=True)
+
+urllib.request.urlretrieve(db_url, reps_db_name)
 
 # makeblastdb.
-unzip_cmd = ['unzip', '-o', reps_db_name + '.fna.zip']
+subprocess.run(['unzip', '-o', reps_db_name])
 
-mv_cmd1 = 'mv gen*/enterobacteriaceae.fsa ' + 'gram_negative_inc_reps' + '.fna && mv gen*/gram_positive.fsa ' + \
-          'gram_positive_inc_reps' + '.fna'
+for file in glob.glob('genomic*'):
+    source_dir = file
 
-makedb_cmd1 = ['makeblastdb', '-in', 'gram_negative_inc_reps' + '.fna', '-out', 'gram_negative_inc_reps', '-dbtype', 'nucl']
-makedb_cmd2 = ['makeblastdb', '-in', 'gram_positive_inc_reps' + '.fna', '-out', 'gram_positive_inc_reps', '-dbtype', 'nucl']
+# Gram positive database list
+gp_libs = []
+with open(source_dir + '/config', 'r') as config_fh:
+    for line in config_fh.readlines():
+        if 'Gram Positive' in line:
+            gp_libs.append(line.split('\t')[0])
 
-subprocess.run(unzip_cmd)
-subprocess.run(mv_cmd1, shell=True)
-subprocess.run(makedb_cmd1)
-subprocess.run(makedb_cmd2)
-subprocess.run('rm -rf genomicepidemiology* inc_reps.fna.zip', shell=True)
+# Create gram negative files
+print('Building', ', '.join(gp_libs), file=sys.stderr)
+gp_build_lib = gn_data_dir + '/all.fna'
+shutil.move(source_dir + '/' + 'enterobacteriaceae.fsa', gn_data_dir)
+os.chdir(gn_data_dir)
+subprocess.run(['makeblastdb', '-in', 'enterobacteriaceae.fsa', '-out', 'all', '-dbtype', 'nucl'])
+os.chdir('../..')
+
+# Create gram positive files
+os.chdir(gp_data_dir)
+for gp_lib in gp_libs:
+    print('Moving ' + gp_lib, file=sys.stderr)
+    shutil.move('../../' + source_dir + '/' + gp_lib + '.fsa', '.')
+    subprocess.run(['makeblastdb', '-in', gp_lib + '.fsa', '-out', gp_lib, '-dbtype', 'nucl'])
+os.chdir('../..')
+
+os.chdir(data_dir)
 # Write the metadata out.
 metadata = {'url': db_url, 'timestamp': '{0:%Y%m%d%H%M%S}'.format(datetime.datetime.now())}
-
 with open('metadata.jsn', 'w') as m_fh:
     print(json.dumps(metadata, indent=4), file=m_fh)
-
 os.chdir('..')
+
+subprocess.run('rm -rf genomicepidemiology* inc_reps.fna.zip', shell=True)
