@@ -42,9 +42,9 @@ with open(source_dir + '/config', 'r') as config_fh:
 # Create gram negative files
 print('Building', ', '.join(gp_libs), file=sys.stderr)
 gp_build_lib = gn_data_dir + '/all.fna'
-shutil.move(source_dir + '/' + 'enterobacteriaceae.fsa', gn_data_dir)
+shutil.move(source_dir + '/' + 'enterobacteriales.fsa', gn_data_dir)
 os.chdir(gn_data_dir)
-subprocess.run(['makeblastdb', '-in', 'enterobacteriaceae.fsa', '-out', 'all', '-dbtype', 'nucl'])
+subprocess.run(['makeblastdb', '-in', 'enterobacteriales.fsa', '-out', 'all', '-dbtype', 'nucl'])
 os.chdir('../..')
 
 # Create gram positive files

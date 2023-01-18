@@ -1,4 +1,4 @@
-FROM ubuntu:18.04 as taxonconfig
+FROM ubuntu:22.04 as taxonconfig
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -24,35 +24,44 @@ COPY inctyper /
 
 RUN python3 taxid_map.py /config /taxonkit
 
-FROM ubuntu:18.04 as builder
+FROM ubuntu:22.04 as builder
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     ca-certificates \
-    ncbi-blast+ \
+    curl \
     python3 \
     unzip \
     && rm -rf /var/lib/apt/lists/*
+
+RUN  mkdir -p /tmp/blast \
+      && mkdir /opt/blast \
+      && curl ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.9.0/ncbi-blast-2.9.0+-x64-linux.tar.gz \
+      | tar -zxC /tmp/blast --strip-components=1 \
+      && cd /tmp/blast/bin \
+      && mv blastn makeblastdb blastp /opt/blast/ \
+      && cd .. \
+      && rm -rf /tmp/blast
+
+ENV PATH /opt/blast:$PATH
 
 COPY inctyper/inc_builder.py /
 
 RUN python3 inc_builder.py
 
-FROM ubuntu:18.04
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-    ncbi-blast+ \
-    python3 \
-    && rm -rf /var/lib/apt/lists/*
+FROM python:3.10-slim
 
 COPY --from=builder /db /db
+
+COPY --from=builder /opt/blast/blastn /opt/blast/blastn
 
 COPY --from=taxonconfig /genus_to_db.map /db/genus_to_db.map
 
 COPY inctyper/inctyper_lib.py /
 
 COPY inctyper/inc_typer.py /
+
+ENV PATH /opt/blast:$PATH
 
 RUN mkdir /data
 

@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: git-sync
-        uses: wei/git-sync@v3
+        uses: wei/git-sync@v3t
         with:
           source_repo: "https://cgps-admin:${{ secrets.GIT_PUSH_TOKEN }}@github.com/pathogenwatch/inctyper.git"
           source_branch: "main"
