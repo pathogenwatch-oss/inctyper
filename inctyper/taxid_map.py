@@ -45,10 +45,10 @@ def extract_genus_maps(taxid_dict):
 
         lookup_process = subprocess.Popen(command, stdout=subprocess.PIPE)
 
-        genuses = list(filter(lambda x: '[genus]' in x,
+        genera = list(filter(lambda x: '[genus]' in x,
                               [line.decode('UTF=8').lstrip().rstrip() for line in lookup_process.stdout.readlines()]))
 
-        for line in genuses:
+        for line in genera:
             print(line, file=sys.stderr)
             genus_id = extract_genus_id(line)
             genus_to_gram_type[genus_id] = taxid_dict[taxid]
